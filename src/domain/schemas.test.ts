@@ -48,8 +48,12 @@ describe("GuidelinesSchema", () => {
   });
 
   it("defaults focusAreas to []", () => {
-    const { focusAreas, ...rest } = validGuidelines;
-    expect(GuidelinesSchema.parse(rest).focusAreas).toEqual([]);
+    const noFocus = {
+      type: validGuidelines.type,
+      seniority: validGuidelines.seniority,
+      budget: validGuidelines.budget,
+    };
+    expect(GuidelinesSchema.parse(noFocus).focusAreas).toEqual([]);
   });
 
   it("accepts the minutes budget variant", () => {

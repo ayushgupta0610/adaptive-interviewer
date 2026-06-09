@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Adaptive Mock Interviewer
 
-## Getting Started
+Paste a **job description** + a few **guidelines** → an AI interviewer runs an adaptive mock
+interview (voice or text), then produces a **scored feedback report**. It probes deeper on weak
+answers and moves on from strong ones.
 
-First, run the development server:
+Design spec: [`docs/superpowers/specs/2026-06-10-adaptive-mock-interviewer-design.md`](docs/superpowers/specs/2026-06-10-adaptive-mock-interviewer-design.md).
+
+## Architecture — four isolated units
+
+| Unit | What it does | Where |
+| --- | --- | --- |
+| **prepare** | JD + guidelines → cached `InterviewPlan` (competencies + rubric) | `src/usecases/prepare.ts`, `src/core/planPrompt.ts` |
+| **runtime** | the live interview; adaptivity is the system prompt | `src/core/sessionConfig.ts` (voice) + `src/usecases/turn.ts` (text) |
+| **score** | transcript + rubric → `FeedbackReport` | `src/usecases/score.ts`, `src/core/scoringPrompt.ts` |
+| **voice** | ElevenLabs agent (STT + turn-taking + TTS) | `src/services/elevenlabs.ts`, `src/components/VoiceInterview.tsx` |
+
+External services (OpenRouter / ElevenLabs / Supabase) sit behind thin **injectable adapters**
+(`src/services/*`), so the core logic is tested with fakes (`npm test`, no network).
+
+## Capability tiers (degrades gracefully by which keys are present)
+
+- **OpenRouter only** → full **text** interview + adaptive follow-ups + scored report (in-memory plan cache).
+- **+ ElevenLabs** → **voice** interview with webcam, live transcript.
+- **+ Supabase** → durable plan cache, sessions, transcripts, feedback, with RLS.
+
+The home page shows which services are configured; missing-key routes return a clear `503`.
+
+## Run it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # fill in keys (see below)
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Keys (`.env.local`)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `OPENROUTER_API_KEY` — required. `OPENROUTER_MODEL` defaults to `anthropic/claude-sonnet-4.6`.
+- `ELEVENLABS_API_KEY` + `NEXT_PUBLIC_ELEVENLABS_AGENT_ID` — for voice.
+- `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` + `SUPABASE_SERVICE_ROLE_KEY` — for persistence.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### ElevenLabs agent setup (voice)
 
-## Learn More
+1. Create a Conversational AI agent in the ElevenLabs dashboard.
+2. Set its **Custom LLM** to OpenRouter: server URL `https://openrouter.ai/api/v1`, model =
+   `OPENROUTER_MODEL`, secret `OPENAI_API_KEY` = your OpenRouter key.
+3. Enable **overrides** for system prompt + first message (the app injects the per-interview persona).
+4. Paste the agent id into `NEXT_PUBLIC_ELEVENLABS_AGENT_ID`.
 
-To learn more about Next.js, take a look at the following resources:
+### Supabase setup (persistence)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Apply `supabase/migrations/0001_init.sql` (SQL editor or `supabase db push`) and enable
+**Anonymous Sign-ins** so RLS scopes each candidate by `auth.uid()`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Commands
 
-## Deploy on Vercel
+```bash
+npm test          # unit + integration (fakes; no network)
+npm run coverage  # coverage on the core logic
+npm run lint
+npm run build
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Status
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- ✅ Core engine (domain, prompt/session builders, prepare/score/turn) — **49 tests, ~96% core coverage**.
+- ✅ API routes + UI (config → interview → report); text mode runs with only OpenRouter.
+- ✅ Supabase schema + RLS + key-gated RLS test; ElevenLabs adapter + voice UI.
+- ⏳ Pending live keys: end-to-end voice run, and the ElevenLabs **Simulate Conversations** E2E.
+- ⏳ Remaining wire-up: upload the webcam recording to Supabase Storage (`recording_url` already in schema).
