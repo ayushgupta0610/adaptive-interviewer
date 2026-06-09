@@ -34,6 +34,13 @@ cp .env.example .env.local   # fill in keys (see below)
 npm run dev                  # http://localhost:3000
 ```
 
+**No keys yet?** Run the whole text pipeline (prepare → interview → score) against a deterministic
+stub LLM:
+
+```bash
+FAKE_LLM=1 npm run dev
+```
+
 ### Keys (`.env.local`)
 
 - `OPENROUTER_API_KEY` — required. `OPENROUTER_MODEL` defaults to `anthropic/claude-sonnet-4.6`.
