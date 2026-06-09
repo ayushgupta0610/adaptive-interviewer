@@ -1,5 +1,6 @@
-import { env, hasOpenRouter, hasSupabaseService } from "./env";
+import { env, hasOpenRouter, fakeLlmEnabled, hasSupabaseService } from "./env";
 import { createOpenRouterClient, type LlmClient } from "./llm";
+import { createFakeLlm } from "./fakeLlm";
 import { createElevenLabsVoice, type VoiceProvider } from "./elevenlabs";
 import { createMemoryPlanCache } from "./memoryCache";
 import { createServiceClient, createSupabasePlanCache, createSupabaseRepo, type SupabaseRepo } from "./supabase";
@@ -14,6 +15,7 @@ export class ServiceUnavailableError extends Error {
 }
 
 export function getLlm(): LlmClient {
+  if (fakeLlmEnabled) return createFakeLlm();
   if (!hasOpenRouter) {
     throw new ServiceUnavailableError("OPENROUTER_API_KEY is not set — add it to .env.local.");
   }

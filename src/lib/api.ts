@@ -12,6 +12,7 @@ export interface PrepareResponse {
 
 export interface StatusResponse {
   openrouter: boolean;
+  fakeLlm: boolean;
   elevenlabs: boolean;
   supabase: boolean;
   agentId: string | null;

@@ -16,7 +16,7 @@ export default function StatusBanner() {
   return (
     <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm text-zinc-600">
       <span className="mr-4">
-        <Dot ok={s.openrouter} /> OpenRouter {s.openrouter ? `(${s.model})` : "— required"}
+        <Dot ok={s.openrouter} /> LLM {s.openrouter ? `(${s.model})` : "— required"}
       </span>
       <span className="mr-4">
         <Dot ok={s.elevenlabs} /> ElevenLabs voice {s.elevenlabs ? "" : "— text mode only"}
