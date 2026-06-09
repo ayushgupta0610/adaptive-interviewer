@@ -25,7 +25,14 @@ export async function prepareInterview(
 ): Promise<PrepareResult> {
   const hash = configHash(input.jd, input.guidelines);
 
-  const hit = await deps.cache.get(hash);
+  // Cache is a best-effort optimization — a persistence outage must never break an
+  // interview, so cache reads/writes are guarded.
+  let hit = null;
+  try {
+    hit = await deps.cache.get(hash);
+  } catch {
+    hit = null;
+  }
   if (hit) return { interviewId: hit.interviewId, plan: hit.plan, cached: true, fallback: false };
 
   let plan: InterviewPlan;
@@ -42,11 +49,17 @@ export async function prepareInterview(
     return { interviewId: randomUUID(), plan: buildDefaultPlan(input.guidelines), cached: false, fallback: true };
   }
 
-  const interviewId = await deps.cache.put({
-    configHash: hash,
-    jd: input.jd,
-    guidelines: input.guidelines,
-    plan,
-  });
+  let interviewId: string;
+  try {
+    interviewId = await deps.cache.put({
+      configHash: hash,
+      jd: input.jd,
+      guidelines: input.guidelines,
+      plan,
+    });
+  } catch {
+    // Persistence failed (e.g. table missing) — proceed with an ephemeral id.
+    interviewId = randomUUID();
+  }
   return { interviewId, plan, cached: false, fallback: false };
 }

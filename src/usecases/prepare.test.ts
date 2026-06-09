@@ -59,6 +59,21 @@ describe("prepareInterview", () => {
     expect(llm.complete).toHaveBeenCalledTimes(2);
   });
 
+  it("still returns a generated plan when the cache is unavailable", async () => {
+    const brokenCache = {
+      get: async () => {
+        throw new Error("table missing");
+      },
+      put: async () => {
+        throw new Error("table missing");
+      },
+    };
+    const res = await prepareInterview({ jd: "Build APIs", guidelines }, { llm: fakeLlm([validPlanJson]), cache: brokenCache });
+    expect(res.fallback).toBe(false);
+    expect(res.plan.role).toBe("Backend Engineer");
+    expect(res.interviewId).toBeTruthy();
+  });
+
   it("falls back to a generic plan when the LLM never returns a valid plan", async () => {
     const llm = fakeLlm(["garbage", "still garbage"]);
     const res = await prepareInterview({ jd: "Build APIs", guidelines }, { llm, cache: createMemoryPlanCache() });
