@@ -23,6 +23,7 @@ export async function POST(request: Request) {
       interviewId: result.interviewId,
       plan: result.plan,
       cached: result.cached,
+      fallback: result.fallback,
       systemPrompt: session.systemPrompt,
       firstMessage: session.firstMessage,
       overrides: buildElevenLabsOverrides(session),

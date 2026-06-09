@@ -5,6 +5,7 @@ export interface PrepareResponse {
   interviewId: string;
   plan: InterviewPlan;
   cached: boolean;
+  fallback: boolean;
   systemPrompt: string;
   firstMessage: string;
   overrides: { agent: { prompt: { prompt: string }; firstMessage: string } };

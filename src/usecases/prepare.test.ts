@@ -59,10 +59,11 @@ describe("prepareInterview", () => {
     expect(llm.complete).toHaveBeenCalledTimes(2);
   });
 
-  it("throws when the LLM never returns a valid plan", async () => {
+  it("falls back to a generic plan when the LLM never returns a valid plan", async () => {
     const llm = fakeLlm(["garbage", "still garbage"]);
-    await expect(
-      prepareInterview({ jd: "Build APIs", guidelines }, { llm, cache: createMemoryPlanCache() }),
-    ).rejects.toThrow();
+    const res = await prepareInterview({ jd: "Build APIs", guidelines }, { llm, cache: createMemoryPlanCache() });
+    expect(res.fallback).toBe(true);
+    expect(res.plan.competencies.length).toBeGreaterThan(0);
+    expect(res.interviewId).toBeTruthy();
   });
 });

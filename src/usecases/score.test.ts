@@ -49,9 +49,10 @@ describe("scoreInterview", () => {
     expect(llm.complete).toHaveBeenCalledTimes(2);
   });
 
-  it("throws when output never validates", async () => {
-    await expect(
-      scoreInterview({ plan, transcript }, { llm: fakeLlm(["nope", "nope"]) }),
-    ).rejects.toThrow();
+  it("returns a transparent fallback report when output never validates", async () => {
+    const report = await scoreInterview({ plan, transcript }, { llm: fakeLlm(["nope", "nope"]) });
+    expect(report.recommendation).toBe("lean-no");
+    expect(report.summary.toLowerCase()).toContain("unavailable");
+    expect(report.perCompetency[0].competencyId).toBe("apis");
   });
 });

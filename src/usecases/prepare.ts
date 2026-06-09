@@ -1,6 +1,8 @@
+import { randomUUID } from "node:crypto";
 import { InterviewPlanSchema, type Guidelines, type InterviewPlan } from "../domain/schemas";
 import { configHash } from "../domain/hash";
 import { buildPlanMessages } from "../core/planPrompt";
+import { buildDefaultPlan } from "../core/defaultPlan";
 import type { LlmClient } from "../services/llm";
 import type { PlanCache } from "./ports";
 import { completeStructured } from "./completeStructured";
@@ -9,6 +11,8 @@ export interface PrepareResult {
   interviewId: string;
   plan: InterviewPlan;
   cached: boolean;
+  /** True when plan generation failed and a generic fallback plan is used (spec §8). */
+  fallback: boolean;
 }
 
 /**
@@ -22,14 +26,21 @@ export async function prepareInterview(
   const hash = configHash(input.jd, input.guidelines);
 
   const hit = await deps.cache.get(hash);
-  if (hit) return { interviewId: hit.interviewId, plan: hit.plan, cached: true };
+  if (hit) return { interviewId: hit.interviewId, plan: hit.plan, cached: true, fallback: false };
 
-  const plan = await completeStructured(
-    deps.llm,
-    buildPlanMessages(input.jd, input.guidelines),
-    InterviewPlanSchema,
-    { model: deps.model },
-  );
+  let plan: InterviewPlan;
+  try {
+    plan = await completeStructured(
+      deps.llm,
+      buildPlanMessages(input.jd, input.guidelines),
+      InterviewPlanSchema,
+      { model: deps.model },
+    );
+  } catch {
+    // Plan generation failed — fall back to a generic plan so the interview can
+    // still run. Not cached, so a later successful generation can replace it.
+    return { interviewId: randomUUID(), plan: buildDefaultPlan(input.guidelines), cached: false, fallback: true };
+  }
 
   const interviewId = await deps.cache.put({
     configHash: hash,
@@ -37,5 +48,5 @@ export async function prepareInterview(
     guidelines: input.guidelines,
     plan,
   });
-  return { interviewId, plan, cached: false };
+  return { interviewId, plan, cached: false, fallback: false };
 }

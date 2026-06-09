@@ -83,6 +83,7 @@ export default function Home() {
           <div className="rounded-lg bg-zinc-50 p-3 text-sm text-zinc-600">
             Interviewing for <span className="font-medium">{plan.role}</span> · {plan.competencies.length} competencies
             {prep.cached ? " · (cached plan)" : ""}
+            {prep.fallback ? " · (generic fallback plan — generation failed)" : ""}
           </div>
           {mode === "voice" && agentId ? (
             <VoiceInterview agentId={agentId} overrides={prep.overrides} onComplete={onComplete} />
