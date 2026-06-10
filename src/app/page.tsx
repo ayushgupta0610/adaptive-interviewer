@@ -48,6 +48,7 @@ export default function Home() {
   const [plan, setPlan] = useState<InterviewPlan | null>(null);
   const [mode, setMode] = useState<Mode>("text");
   const [report, setReport] = useState<FeedbackReport | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -68,8 +69,9 @@ export default function Home() {
     setStep("interview");
   }
 
-  async function onComplete(transcript: Transcript) {
+  async function onComplete(transcript: Transcript, convId?: string) {
     if (!plan) return;
+    setConversationId(convId ?? null);
     setStep("scoring");
     setError(null);
     try {
@@ -87,6 +89,7 @@ export default function Home() {
     setPrep(null);
     setPlan(null);
     setReport(null);
+    setConversationId(null);
     setError(null);
   }
 
@@ -158,7 +161,7 @@ export default function Home() {
 
       {step === "report" && report && plan && (
         <div className="animate-rise">
-          <ReportView report={report} plan={plan} onRestart={restart} />
+          <ReportView report={report} plan={plan} conversationId={conversationId ?? undefined} onRestart={restart} />
         </div>
       )}
     </main>

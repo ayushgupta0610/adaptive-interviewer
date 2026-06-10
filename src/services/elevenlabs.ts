@@ -1,6 +1,7 @@
 import type { Transcript } from "../domain/schemas";
 import type { InterviewerSession } from "../core/sessionConfig";
 import { normalizeTranscript } from "../core/transcript";
+import { normalizeAnalysis, type ConversationAnalysis } from "../core/analysis";
 
 /**
  * Map our interviewer session into the ElevenLabs conversation `overrides` payload.
@@ -21,6 +22,7 @@ type FetchImpl = (input: string | URL | Request, init?: RequestInit) => Promise<
 /** Port: what the server needs from the voice provider after a call. */
 export interface VoiceProvider {
   getConversationTranscript(conversationId: string): Promise<Transcript>;
+  getConversationAnalysis(conversationId: string): Promise<ConversationAnalysis>;
 }
 
 export interface ElevenLabsConfig {
@@ -45,6 +47,17 @@ export function createElevenLabsVoice(config: ElevenLabsConfig): VoiceProvider {
       }
       const data = (await res.json()) as { transcript?: unknown };
       return normalizeTranscript(data.transcript);
+    },
+    async getConversationAnalysis(conversationId) {
+      const res = await doFetch(`${baseUrl}/conversations/${conversationId}`, {
+        method: "GET",
+        headers: { "xi-api-key": config.apiKey },
+      });
+      if (!res.ok) {
+        const detail = await res.text().catch(() => "");
+        throw new Error(`ElevenLabs analysis fetch failed (${res.status}): ${detail}`);
+      }
+      return normalizeAnalysis(await res.json());
     },
   };
 }

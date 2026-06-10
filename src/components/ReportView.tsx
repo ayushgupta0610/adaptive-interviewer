@@ -2,6 +2,7 @@
 
 import type { FeedbackReport, InterviewPlan } from "@/domain/schemas";
 import { Button, Card, Badge, cn } from "@/components/ui";
+import RecruiterPanel from "@/components/RecruiterPanel";
 
 function label(plan: InterviewPlan, competencyId: string): string {
   return plan.competencies.find((c) => c.id === competencyId)?.label ?? competencyId;
@@ -35,10 +36,12 @@ const REC: Record<FeedbackReport["recommendation"], { label: string; tone: "gree
 export default function ReportView({
   report,
   plan,
+  conversationId,
   onRestart,
 }: {
   report: FeedbackReport;
   plan: InterviewPlan;
+  conversationId?: string;
   onRestart: () => void;
 }) {
   const rec = REC[report.recommendation];
@@ -122,6 +125,8 @@ export default function ReportView({
           </ul>
         </Card>
       </div>
+
+      {conversationId && <RecruiterPanel conversationId={conversationId} />}
 
       <div className="flex justify-center pt-1">
         <Button variant="secondary" size="lg" onClick={onRestart}>Run another interview</Button>

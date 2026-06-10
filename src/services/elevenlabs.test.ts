@@ -45,3 +45,24 @@ describe("createElevenLabsVoice.getConversationTranscript", () => {
     await expect(voice.getConversationTranscript("c")).rejects.toThrow();
   });
 });
+
+describe("createElevenLabsVoice.getConversationAnalysis", () => {
+  it("fetches and normalizes post-call analysis", async () => {
+    const fetchImpl = vi.fn<FetchFn>(async () =>
+      fakeResponse({
+        status: "done",
+        analysis: {
+          transcript_summary: "Interview summary.",
+          evaluation_criteria_results: { technical_depth: { result: "success", rationale: "Good." } },
+          data_collection_results: { key_strength: { value: "system design" } },
+        },
+      }),
+    );
+    const voice = createElevenLabsVoice({ apiKey: "xi", fetchImpl });
+    const a = await voice.getConversationAnalysis("conv_9");
+    expect(String(fetchImpl.mock.calls[0][0])).toContain("conv_9");
+    expect(a.ready).toBe(true);
+    expect(a.criteria[0].id).toBe("technical_depth");
+    expect(a.data[0]).toEqual({ key: "key_strength", value: "system design", rationale: undefined });
+  });
+});

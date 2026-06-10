@@ -1,5 +1,6 @@
 import type { Guidelines, InterviewPlan, FeedbackReport, Transcript } from "@/domain/schemas";
 import type { ChatMessage } from "@/core/chat";
+import type { ConversationAnalysis } from "@/core/analysis";
 
 export interface PrepareResponse {
   interviewId: string;
@@ -39,5 +40,8 @@ export const apiTurn = (systemPrompt: string, messages: ChatMessage[]) =>
 
 export const apiScore = (plan: InterviewPlan, transcript: Transcript) =>
   postJson<{ report: FeedbackReport }>("/api/interview/score", { plan, transcript });
+
+export const apiAnalysis = (conversationId: string) =>
+  postJson<{ analysis: ConversationAnalysis }>("/api/interview/analysis", { conversationId });
 
 export const apiStatus = () => fetch("/api/status").then((r) => r.json() as Promise<StatusResponse>);

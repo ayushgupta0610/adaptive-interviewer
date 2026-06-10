@@ -17,16 +17,20 @@ function Room({
   agentId: string;
   overrides: PrepareResponse["overrides"];
   plan: InterviewPlan;
-  onComplete: (t: Transcript) => void;
+  onComplete: (t: Transcript, conversationId?: string) => void;
 }) {
   const turnsRef = useRef<Transcript>([]);
+  const convoIdRef = useRef<string | null>(null);
   const [turns, setTurns] = useState<Transcript>([]);
   const [error, setError] = useState<string | null>(null);
   const [started, setStarted] = useState(false);
 
   const convo = useConversation({
-    onConnect: () => setStarted(true),
-    onDisconnect: () => onComplete(turnsRef.current),
+    onConnect: ({ conversationId }) => {
+      convoIdRef.current = conversationId;
+      setStarted(true);
+    },
+    onDisconnect: () => onComplete(turnsRef.current, convoIdRef.current ?? undefined),
     onMessage: ({ source, message }) => {
       const text = (message ?? "").trim();
       if (!text) return;
@@ -97,7 +101,7 @@ export default function VoiceInterview(props: {
   agentId: string;
   overrides: PrepareResponse["overrides"];
   plan: InterviewPlan;
-  onComplete: (t: Transcript) => void;
+  onComplete: (t: Transcript, conversationId?: string) => void;
 }) {
   return (
     <ConversationProvider>
