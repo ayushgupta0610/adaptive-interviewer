@@ -6,7 +6,7 @@ import { z } from "zod";
  */
 const EnvSchema = z.object({
   OPENROUTER_API_KEY: z.string().min(1).optional(),
-  OPENROUTER_MODEL: z.string().min(1).default("anthropic/claude-sonnet-4.6"),
+  OPENROUTER_MODEL: z.string().min(1).default("anthropic/claude-haiku-4.5"),
   // Deterministic stub LLM for keyless local dev / offline demo / E2E.
   FAKE_LLM: z.string().optional(),
   ELEVENLABS_API_KEY: z.string().min(1).optional(),
