@@ -2,6 +2,8 @@ import { z } from "zod";
 import { getVoice } from "@/services/runtime";
 import { errorResponse } from "@/services/http";
 
+export const maxDuration = 60;
+
 const BodySchema = z.object({ conversationId: z.string().min(1) });
 
 /** Fetch the official ElevenLabs transcript for a finished conversation. */

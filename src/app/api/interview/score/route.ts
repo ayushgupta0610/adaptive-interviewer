@@ -4,6 +4,8 @@ import { scoreInterview } from "@/usecases/score";
 import { getLlm, getRepo, getVoice, interviewModel } from "@/services/runtime";
 import { errorResponse } from "@/services/http";
 
+export const maxDuration = 60;
+
 // Memory mode: client supplies the plan + transcript directly (no persistence).
 const DirectSchema = z.object({
   plan: InterviewPlanSchema,

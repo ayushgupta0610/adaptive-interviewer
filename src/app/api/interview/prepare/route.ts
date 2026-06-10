@@ -6,6 +6,9 @@ import { prepareInterview } from "@/usecases/prepare";
 import { getLlm, getPlanCache, interviewModel } from "@/services/runtime";
 import { errorResponse } from "@/services/http";
 
+// Plan generation is an LLM call; allow headroom over Vercel's default timeout.
+export const maxDuration = 60;
+
 const BodySchema = z.object({
   jd: z.string().min(20, "Job description is too short (min 20 chars)."),
   guidelines: GuidelinesSchema,

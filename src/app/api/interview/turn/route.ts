@@ -3,6 +3,8 @@ import { interviewerTurn } from "@/usecases/turn";
 import { getLlm, interviewModel } from "@/services/runtime";
 import { errorResponse } from "@/services/http";
 
+export const maxDuration = 60;
+
 const BodySchema = z.object({
   systemPrompt: z.string().min(1),
   messages: z
