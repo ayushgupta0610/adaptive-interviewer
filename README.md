@@ -71,8 +71,11 @@ npm run build
 
 ## Status
 
-- ✅ Core engine (domain, prompt/session builders, prepare/score/turn) — **49 tests, ~96% core coverage**.
-- ✅ API routes + UI (config → interview → report); text mode runs with only OpenRouter.
-- ✅ Supabase schema + RLS + key-gated RLS test; ElevenLabs adapter + voice UI.
-- ⏳ Pending live keys: end-to-end voice run, and the ElevenLabs **Simulate Conversations** E2E.
-- ⏳ Remaining wire-up: upload the webcam recording to Supabase Storage (`recording_url` already in schema).
+Verified live against real OpenRouter + ElevenLabs + Supabase:
+
+- ✅ **Core interview** — prepare → adaptive turns → score. The interviewer probes weak answers and advances on strong ones; scoring is evidence-grounded. (**59 tests + 2 key-gated E2E**, ~96% core coverage.)
+- ✅ **Voice** — ElevenLabs agent driven headlessly via Simulate-Conversations → transcript → score (key-gated E2E passes live). Browser mic/speaker session is wired (the one step that needs a human at a mic).
+- ✅ **Persistence** — plan cache reads/writes Supabase; cache is best-effort so an outage never breaks an interview.
+- ✅ **RLS** — per-candidate isolation + forged-row rejection verified live (admin-user test).
+- ⏳ Remaining wire-up: upload the webcam recording to Supabase Storage (`recording_url` already in schema); UI hookup of per-candidate session/feedback persistence (routes + RLS already exist).
+- ℹ️ Anonymous Sign-ins only needed for the future client-side candidate-auth flow; RLS correctness is independent and already proven.
