@@ -24,6 +24,30 @@ add next (with the auth/payments phase).
 - **RLS:** per-candidate isolation on `sessions`/`feedback` (verified live).
 - **Schema validation (zod) on every input**; graceful degradation (no dead-ends).
 
+## Malicious / untrusted job-description content
+
+The JD is the main free-text input. How it's contained:
+
+- **No XSS.** JD-derived text (role, competency labels, seed questions) renders as **escaped React
+  text** — no `dangerouslySetInnerHTML` / `innerHTML` / `eval` anywhere, so a `<script>` JD is inert.
+- **Structure locked.** The plan is **schema-validated** (`InterviewPlanSchema`) before use/store, so
+  injection can't change the output shape or inject anything executable — only string *contents*.
+- **Size + rate caps** (20k chars, 15/min) → no cost/DoS via JD.
+- **No SSRF.** The JD is just text to the LLM; nothing fetches URLs from it.
+- **Prompt-injection hardening.** The plan prompt treats the JD as DATA, not instructions; the live
+  agent has ElevenLabs' **prompt-injection guardrail enabled** (catches candidate-side injection
+  mid-call → ends the call).
+
+Gaps / recommended:
+
+- **No explicit content moderation** on the JD (toxic / abusive / illegal). Today we rely on the
+  model's built-in safety + the schema. Add a cheap **moderation pass** (Anthropic/OpenAI moderation
+  or a classifier) at `prepare` time before generating the plan — reject or flag.
+- **LLM prompt injection is mitigated, not eliminated** — injected text could still surface inside a
+  seed question. A moderation pass + a "is this actually a job description?" relevance check reduce it.
+- ElevenLabs **content-category guardrails** (sexual / harassment / self-harm) are left off to avoid
+  false positives in legitimate interviews — enable/tune per your tolerance.
+
 ## Recommended next (pairs with auth / payments)
 
 1. **Durable rate limiting + per-user quotas.** The in-memory limiter is **per server instance**, so
