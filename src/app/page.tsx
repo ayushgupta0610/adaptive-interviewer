@@ -148,7 +148,7 @@ export default function Home() {
           {mode === "voice" && agentId ? (
             <VoiceInterview agentId={agentId} overrides={prep.overrides} plan={plan} simliEnabled={simliEnabled} onComplete={onComplete} />
           ) : (
-            <TextInterview systemPrompt={prep.systemPrompt} firstMessage={prep.firstMessage} plan={plan} onComplete={onComplete} />
+            <TextInterview interviewId={prep.interviewId} firstMessage={prep.firstMessage} plan={plan} onComplete={onComplete} />
           )}
         </section>
       )}

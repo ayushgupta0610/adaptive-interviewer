@@ -8,6 +8,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 type Handler = (req: Request) => Promise<Response>;
 let prepare: Handler;
 let score: Handler;
+let turn: Handler;
 
 function post(body: unknown): Request {
   return new Request("http://test/api", {
@@ -28,6 +29,7 @@ beforeAll(async () => {
   process.env.FAKE_LLM = "1";
   prepare = (await import("./prepare/route")).POST as Handler;
   score = (await import("./score/route")).POST as Handler;
+  turn = (await import("./turn/route")).POST as Handler;
 });
 
 describe("POST /api/interview/prepare", () => {
@@ -42,6 +44,29 @@ describe("POST /api/interview/prepare", () => {
 
   it("returns 400 on an invalid body", async () => {
     const res = await prepare(post({ jd: "short" }));
+    expect(res.status).toBe(400);
+  });
+});
+
+describe("POST /api/interview/turn", () => {
+  it("derives the prompt server-side from interviewId and returns a reply", async () => {
+    const prep = await (await prepare(post({ jd: "Senior backend engineer role description.", guidelines }))).json();
+    const res = await turn(
+      post({ interviewId: prep.interviewId, messages: [{ role: "assistant", content: "Hi" }, { role: "user", content: "My answer." }] }),
+    );
+    expect(res.status).toBe(200);
+    expect((await res.json()).reply.length).toBeGreaterThan(0);
+  });
+
+  it("returns 404 for an unknown interviewId (no open-proxy)", async () => {
+    const res = await turn(
+      post({ interviewId: "00000000-0000-0000-0000-000000000000", messages: [{ role: "user", content: "hi" }] }),
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it("rejects a malformed interviewId with 400 (not 500)", async () => {
+    const res = await turn(post({ interviewId: "nope", messages: [{ role: "user", content: "hi" }] }));
     expect(res.status).toBe(400);
   });
 });

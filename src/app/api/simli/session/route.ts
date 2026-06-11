@@ -1,6 +1,7 @@
 import { hasSimli, env } from "@/services/env";
 import { ServiceUnavailableError } from "@/services/runtime";
 import { errorResponse } from "@/services/http";
+import { enforceRateLimit } from "@/services/rateLimit";
 
 export const maxDuration = 30;
 
@@ -11,7 +12,9 @@ const SIMLI_BASE = "https://api.simli.ai";
  * client). Calls Simli's REST directly to avoid importing the browser/LiveKit SDK
  * server-side. The browser then constructs the SimliClient with these.
  */
-export async function POST() {
+export async function POST(request: Request) {
+  const limited = enforceRateLimit(request, "simli", 15);
+  if (limited) return limited;
   try {
     if (!hasSimli) {
       throw new ServiceUnavailableError("Simli is not configured (need SIMLI_API_KEY + SIMLI_FACE_ID).");

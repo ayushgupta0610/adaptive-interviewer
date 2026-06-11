@@ -67,6 +67,7 @@ describe("prepareInterview", () => {
       put: async () => {
         throw new Error("table missing");
       },
+      getById: async () => null,
     };
     const res = await prepareInterview({ jd: "Build APIs", guidelines }, { llm: fakeLlm([validPlanJson]), cache: brokenCache });
     expect(res.fallback).toBe(false);

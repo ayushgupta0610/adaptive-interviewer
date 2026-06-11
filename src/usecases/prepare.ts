@@ -44,9 +44,22 @@ export async function prepareInterview(
       { model: deps.model },
     );
   } catch {
-    // Plan generation failed — fall back to a generic plan so the interview can
-    // still run. Not cached, so a later successful generation can replace it.
-    return { interviewId: randomUUID(), plan: buildDefaultPlan(input.guidelines), cached: false, fallback: true };
+    // Plan generation failed — fall back to a generic plan so the interview can still
+    // run. Store it under a unique hash (not the real config hash) so it's retrievable
+    // by id (for /turn) without poisoning the cache slot for a later real generation.
+    const fallbackPlan = buildDefaultPlan(input.guidelines);
+    let interviewId: string;
+    try {
+      interviewId = await deps.cache.put({
+        configHash: randomUUID(),
+        jd: input.jd,
+        guidelines: input.guidelines,
+        plan: fallbackPlan,
+      });
+    } catch {
+      interviewId = randomUUID();
+    }
+    return { interviewId, plan: fallbackPlan, cached: false, fallback: true };
   }
 
   let interviewId: string;

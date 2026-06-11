@@ -8,12 +8,12 @@ import { Button, Card, Spinner } from "@/components/ui";
 import CompetencyRail from "@/components/CompetencyRail";
 
 export default function TextInterview({
-  systemPrompt,
+  interviewId,
   firstMessage,
   plan,
   onComplete,
 }: {
-  systemPrompt: string;
+  interviewId: string;
   firstMessage: string;
   plan: InterviewPlan;
   onComplete: (t: Transcript) => void;
@@ -37,7 +37,7 @@ export default function TextInterview({
     setBusy(true);
     setError(null);
     try {
-      const { reply } = await apiTurn(systemPrompt, next);
+      const { reply } = await apiTurn(interviewId, next);
       setMessages([...next, { role: "assistant", content: reply }]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Turn failed");

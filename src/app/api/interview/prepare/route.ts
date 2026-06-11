@@ -5,16 +5,19 @@ import { buildElevenLabsOverrides } from "@/services/elevenlabs";
 import { prepareInterview } from "@/usecases/prepare";
 import { getLlm, getPlanCache, interviewModel } from "@/services/runtime";
 import { errorResponse } from "@/services/http";
+import { enforceRateLimit } from "@/services/rateLimit";
 
 // Plan generation is an LLM call; allow headroom over Vercel's default timeout.
 export const maxDuration = 60;
 
 const BodySchema = z.object({
-  jd: z.string().min(20, "Job description is too short (min 20 chars)."),
+  jd: z.string().min(20, "Job description is too short (min 20 chars).").max(20000, "Job description is too long."),
   guidelines: GuidelinesSchema,
 });
 
 export async function POST(request: Request) {
+  const limited = enforceRateLimit(request, "prepare", 15);
+  if (limited) return limited;
   try {
     const body = BodySchema.parse(await request.json());
     const result = await prepareInterview(

@@ -3,13 +3,14 @@ import { InterviewPlanSchema, TranscriptSchema } from "@/domain/schemas";
 import { scoreInterview } from "@/usecases/score";
 import { getLlm, getRepo, getVoice, interviewModel } from "@/services/runtime";
 import { errorResponse } from "@/services/http";
+import { enforceRateLimit } from "@/services/rateLimit";
 
 export const maxDuration = 60;
 
 // Memory mode: client supplies the plan + transcript directly (no persistence).
 const DirectSchema = z.object({
   plan: InterviewPlanSchema,
-  transcript: TranscriptSchema.min(1, "Transcript is empty."),
+  transcript: TranscriptSchema.min(1, "Transcript is empty.").max(500, "Transcript is too long."),
 });
 
 // Supabase mode: persist + score a finished voice conversation.
@@ -21,6 +22,8 @@ const SessionSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const limited = enforceRateLimit(request, "score", 15);
+  if (limited) return limited;
   try {
     const raw = await request.json();
 

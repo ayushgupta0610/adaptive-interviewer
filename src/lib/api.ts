@@ -41,8 +41,8 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
 export const apiPrepare = (jd: string, guidelines: Guidelines) =>
   postJson<PrepareResponse>("/api/interview/prepare", { jd, guidelines });
 
-export const apiTurn = (systemPrompt: string, messages: ChatMessage[]) =>
-  postJson<{ reply: string }>("/api/interview/turn", { systemPrompt, messages });
+export const apiTurn = (interviewId: string, messages: ChatMessage[]) =>
+  postJson<{ reply: string }>("/api/interview/turn", { interviewId, messages });
 
 export const apiScore = (plan: InterviewPlan, transcript: Transcript) =>
   postJson<{ report: FeedbackReport }>("/api/interview/score", { plan, transcript });

@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { InterviewPlan, FeedbackReport, Transcript } from "../domain/schemas";
+import type { InterviewPlan, FeedbackReport, Transcript, Guidelines } from "../domain/schemas";
 import type { PlanCache } from "../usecases/ports";
 import { env } from "./env";
 
@@ -34,6 +34,16 @@ export function createSupabasePlanCache(client: SupabaseClient): PlanCache {
         .single();
       if (error) throw new Error(`interviews insert failed: ${error.message}`);
       return data.id as string;
+    },
+    async getById(interviewId) {
+      const { data, error } = await client
+        .from("interviews")
+        .select("plan, guidelines")
+        .eq("id", interviewId)
+        .maybeSingle();
+      if (error) throw new Error(`interview lookup failed: ${error.message}`);
+      if (!data) return null;
+      return { plan: data.plan as InterviewPlan, guidelines: data.guidelines as Guidelines };
     },
   };
 }
