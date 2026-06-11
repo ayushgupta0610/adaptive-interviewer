@@ -65,7 +65,7 @@ function Room({
   function start() {
     setError(null);
     try {
-      convo.startSession({ agentId, connectionType: simliEnabled ? "websocket" : "webrtc", overrides });
+      convo.startSession({ agentId, connectionType: "webrtc", overrides });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not start the session");
     }
