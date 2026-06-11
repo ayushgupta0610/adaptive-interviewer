@@ -74,6 +74,30 @@ top of voice — reserve it for the premium experience.
 
 ## Where it lives in this repo
 - Voice runtime: `src/components/VoiceInterview.tsx` (ElevenLabs `useConversation`).
-- Avatar: `src/components/SimliAvatar.tsx` (Pattern A), gated on `NEXT_PUBLIC_SIMLI_API_KEY` +
-  `NEXT_PUBLIC_SIMLI_FACE_ID`. Off by default.
+- Avatar: `src/components/SimliAvatar.tsx` (Pattern A) + `src/app/api/simli/session/route.ts`.
+  Gated on `SIMLI_API_KEY` + `SIMLI_FACE_ID` (both server-side); the client enables it via
+  `/api/status` (`simli:true`). Off by default.
 - Setup: see `.env.example` (Simli section).
+
+## Verified live (2026-06-11)
+
+End-to-end tested against the real OpenRouter + ElevenLabs + Simli keys, on the **production
+build**, driving a real voice interview in headed Chrome.
+
+- **Server:** `/api/status` → `simli:true`; `/api/simli/session` mints a real session token + 4 ICE
+  servers. ✅
+- **Avatar renders:** the Simli face paints in-browser (512×512 video, playing). ✅
+- **Audio format:** the ElevenLabs agent's audio is accepted by Simli **as-is** — PCM16 / 16 kHz /
+  mono. Simli ACKs the chunks; **no resampling needed** (the one risk we'd flagged is cleared). ✅
+- **Live pipeline:** in a real interview the agent connects, speaks, `onAudio` taps its audio, Simli
+  lip-syncs it (steady ACKs), and the candidate webcam runs in parallel (two `<video>` tracks
+  playing: avatar + webcam). ✅
+- **Transport — use `webrtc`, not `websocket`.** Our first cut used websocket mode (so `onAudio`
+  fires) but that **401'd** for this public agent. `onAudio` also fires in `webrtc`, which
+  authenticates cleanly — so the avatar path uses `webrtc`. (Fixed in `VoiceInterview.tsx`.)
+- **Known timing nuance:** Simli connects **~4–5s after** you press Start (it mounts when the
+  session begins), so the **first few words of the opening line aren't lip-synced** (the avatar
+  shows "Loading…") then it catches up. To lip-sync the opening too, **pre-connect the avatar** when
+  the interview screen loads — small change, starts the Simli session a few seconds earlier (slightly
+  more cost). Not yet implemented.
+- **Voice:** TTS voice set to **Aria** (`9BWtsMINqrJLrRacOk9x`).

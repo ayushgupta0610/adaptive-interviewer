@@ -10,7 +10,8 @@ persona at session start via **overrides**. This config lives in the ElevenLabs 
 - **id:** `agent_3501ktqv54swfjxt6w9z9k82t68h` (name: "Adaptive Mock Interviewer")
 - **LLM:** `claude-haiku-4-5` — fast time-to-first-token (the default `gemini-2.5-flash`
   added ~7s of lag after each answer).
-- **TTS:** `eleven_flash_v2` (low latency). **ASR:** `scribe_realtime`.
+- **TTS:** `eleven_flash_v2` (low latency), voice **Aria** (`9BWtsMINqrJLrRacOk9x`).
+  **ASR:** `scribe_realtime`.
 - **Overrides enabled** for `agent.prompt.prompt` and `agent.first_message` so the browser
   injects the per-interview system prompt + opening line (one agent serves every JD).
 
