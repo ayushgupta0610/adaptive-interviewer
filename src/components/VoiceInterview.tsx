@@ -112,13 +112,9 @@ function Room({
       <div className="space-y-4">
         {simliEnabled && (
           <Card className="overflow-hidden p-2">
-            {started ? (
-              <SimliAvatar ref={avatarRef} onError={(m) => setError(m)} />
-            ) : (
-              <div className="grid aspect-video w-full place-items-center rounded-xl bg-slate-100 text-center text-xs text-slate-400">
-                Interviewer avatar appears when you start
-              </div>
-            )}
+            {/* Pre-connect on screen load so the avatar is ready before the agent's
+                first word (Simli takes ~4-5s to connect). */}
+            <SimliAvatar ref={avatarRef} onError={(m) => setError(m)} />
             <p className="px-1 pt-1.5 text-[11px] text-slate-400">AI interviewer</p>
           </Card>
         )}
