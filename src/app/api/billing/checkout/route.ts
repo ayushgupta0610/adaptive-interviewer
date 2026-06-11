@@ -23,6 +23,8 @@ export async function POST(request: Request) {
     const { data: plan } = await db.from("plans").select("provider_plan_id").eq("id", planId).maybeSingle();
     const { data: user } = await db.auth.admin.getUserById(userId);
     if (!plan?.provider_plan_id) throw new Error("Plan is missing a Cashfree plan id.");
+    const email = user.user?.email;
+    if (!email) return Response.json({ error: "Account email required for checkout." }, { status: 400 });
 
     const provider = createCashfreeProvider({
       appId: env.CASHFREE_APP_ID!,
@@ -32,7 +34,7 @@ export async function POST(request: Request) {
     });
     const { url } = await provider.createSubscriptionCheckout({
       userId,
-      email: user.user?.email ?? "",
+      email,
       planId,
       providerPlanId: plan.provider_plan_id,
     });

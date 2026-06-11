@@ -36,7 +36,10 @@ export async function POST(request: Request) {
     if (!result.allowed)
       return Response.json({ allowed: false, reason: result.reason }, { status: 402 });
 
-    if (result.consume === "free_trial") await repo.markTrialUsed(userId);
+    if (result.consume === "free_trial") {
+      const claimed = await repo.claimFreeTrial(userId);
+      if (!claimed) return Response.json({ allowed: false, reason: "trial_used" }, { status: 402 });
+    }
     if (result.consume !== "none") await repo.recordUsage(userId, mode, result.consume);
     return Response.json({ allowed: true, billedAs: result.consume });
   } catch (err) {

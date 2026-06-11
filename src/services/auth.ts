@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { env, hasSupabaseClient } from "./env";
+import { env, hasSupabaseClient, hasSupabaseService } from "./env";
 
 /**
  * Extract + verify the Supabase access token from the Authorization header → user id.
@@ -9,7 +9,7 @@ import { env, hasSupabaseClient } from "./env";
  * When Supabase IS configured, verifies the JWT and returns the real uid or null.
  */
 export async function getUserId(request: Request): Promise<string | null> {
-  if (!hasSupabaseClient) return "anonymous";
+  if (!hasSupabaseClient && !hasSupabaseService) return "anonymous";
   const auth = request.headers.get("authorization");
   const token = auth?.toLowerCase().startsWith("bearer ") ? auth.slice(7) : null;
   if (!token) return null;

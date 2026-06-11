@@ -66,6 +66,7 @@ export function createCashfreeProvider(cfg: Cfg): PaymentProvider {
     },
 
     verifyAndParseWebhook(rawBody, signature, timestamp) {
+      if (!cfg.webhookSecret) throw new Error("Webhook secret not configured");
       const expected = createHmac("sha256", cfg.webhookSecret)
         .update(timestamp + rawBody)
         .digest("base64");

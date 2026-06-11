@@ -8,8 +8,16 @@ export function createBillingRepo(client: SupabaseClient = createServiceClient()
       const { data } = await client.from("profiles").select("free_trial_used").eq("id", userId).maybeSingle();
       return data ? { freeTrialUsed: data.free_trial_used as boolean } : null;
     },
-    async markTrialUsed(userId: string): Promise<void> {
-      await client.from("profiles").update({ free_trial_used: true }).eq("id", userId);
+    /** Atomically claim the one-time free trial. Returns true only if THIS call flipped it. */
+    async claimFreeTrial(userId: string): Promise<boolean> {
+      const { data, error } = await client
+        .from("profiles")
+        .update({ free_trial_used: true })
+        .eq("id", userId)
+        .eq("free_trial_used", false)
+        .select("id");
+      if (error) throw new Error(`claimFreeTrial failed: ${error.message}`);
+      return (data?.length ?? 0) === 1;
     },
     async getActiveSubscription(userId: string): Promise<Subscription | null> {
       const { data } = await client

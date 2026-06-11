@@ -1,3 +1,4 @@
+import "server-only";
 import { z } from "zod";
 
 /**
@@ -58,4 +59,5 @@ export const hasSupabaseClient = !!env.NEXT_PUBLIC_SUPABASE_URL && !!env.NEXT_PU
 export const hasSupabaseService = !!env.NEXT_PUBLIC_SUPABASE_URL && !!env.SUPABASE_SERVICE_ROLE_KEY;
 export const hasSimli = !!env.SIMLI_API_KEY && !!env.SIMLI_FACE_ID;
 export const hasCashfree = !!env.CASHFREE_APP_ID && !!env.CASHFREE_SECRET_KEY;
+export const hasCashfreeWebhook = hasCashfree && !!env.CASHFREE_WEBHOOK_SECRET;
 export const hasUpstash = !!env.UPSTASH_REDIS_REST_URL && !!env.UPSTASH_REDIS_REST_TOKEN;
