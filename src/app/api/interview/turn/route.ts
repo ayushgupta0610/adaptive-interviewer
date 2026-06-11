@@ -4,6 +4,7 @@ import { interviewerTurn } from "@/usecases/turn";
 import { getLlm, getPlanCache, interviewModel } from "@/services/runtime";
 import { errorResponse } from "@/services/http";
 import { enforceRateLimit } from "@/services/rateLimit";
+import { getUserId, unauthorized } from "@/services/auth";
 
 export const maxDuration = 60;
 
@@ -23,8 +24,10 @@ const BodySchema = z.object({
 
 /** Text-mode interview: returns the next interviewer message given the chat so far. */
 export async function POST(request: Request) {
-  const limited = enforceRateLimit(request, "turn", 60);
+  const limited = await enforceRateLimit(request, "turn", 60);
   if (limited) return limited;
+  const userId = await getUserId(request);
+  if (!userId) return unauthorized();
   try {
     const { interviewId, messages } = BodySchema.parse(await request.json());
 

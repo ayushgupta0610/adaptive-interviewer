@@ -2,6 +2,7 @@ import { hasSimli, env } from "@/services/env";
 import { ServiceUnavailableError } from "@/services/runtime";
 import { errorResponse } from "@/services/http";
 import { enforceRateLimit } from "@/services/rateLimit";
+import { getUserId, unauthorized } from "@/services/auth";
 
 export const maxDuration = 30;
 
@@ -13,8 +14,10 @@ const SIMLI_BASE = "https://api.simli.ai";
  * server-side. The browser then constructs the SimliClient with these.
  */
 export async function POST(request: Request) {
-  const limited = enforceRateLimit(request, "simli", 15);
+  const limited = await enforceRateLimit(request, "simli", 15);
   if (limited) return limited;
+  const userId = await getUserId(request);
+  if (!userId) return unauthorized();
   try {
     if (!hasSimli) {
       throw new ServiceUnavailableError("Simli is not configured (need SIMLI_API_KEY + SIMLI_FACE_ID).");

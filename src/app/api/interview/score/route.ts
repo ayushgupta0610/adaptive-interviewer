@@ -4,6 +4,7 @@ import { scoreInterview } from "@/usecases/score";
 import { getLlm, getRepo, getVoice, interviewModel } from "@/services/runtime";
 import { errorResponse } from "@/services/http";
 import { enforceRateLimit } from "@/services/rateLimit";
+import { getUserId, unauthorized } from "@/services/auth";
 
 export const maxDuration = 60;
 
@@ -22,8 +23,10 @@ const SessionSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const limited = enforceRateLimit(request, "score", 15);
+  const limited = await enforceRateLimit(request, "score", 15);
   if (limited) return limited;
+  const userId = await getUserId(request);
+  if (!userId) return unauthorized();
   try {
     const raw = await request.json();
 
