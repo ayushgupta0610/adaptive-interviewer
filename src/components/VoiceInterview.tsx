@@ -1,26 +1,38 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ConversationProvider, useConversation } from "@elevenlabs/react";
 import type { InterviewPlan, Transcript } from "@/domain/schemas";
 import type { PrepareResponse } from "@/lib/api";
 import Webcam from "./Webcam";
 import CompetencyRail from "./CompetencyRail";
+import SimliAvatar, { type SimliHandle } from "./SimliAvatar";
 import { Button, Card } from "@/components/ui";
+
+/** Decode an ElevenLabs base64 audio chunk into raw PCM bytes for Simli. */
+function decodeBase64(b64: string): Uint8Array {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
 
 function Room({
   agentId,
   overrides,
   plan,
+  simliEnabled,
   onComplete,
 }: {
   agentId: string;
   overrides: PrepareResponse["overrides"];
   plan: InterviewPlan;
+  simliEnabled: boolean;
   onComplete: (t: Transcript, conversationId?: string) => void;
 }) {
   const turnsRef = useRef<Transcript>([]);
   const convoIdRef = useRef<string | null>(null);
+  const avatarRef = useRef<SimliHandle>(null);
   const [turns, setTurns] = useState<Transcript>([]);
   const [error, setError] = useState<string | null>(null);
   const [started, setStarted] = useState(false);
@@ -37,13 +49,23 @@ function Room({
       turnsRef.current = [...turnsRef.current, { role: source === "ai" ? "interviewer" : "candidate", text }];
       setTurns(turnsRef.current);
     },
+    // Tap the agent's audio for the avatar (Pattern A; fires in websocket mode).
+    onAudio: (base64: string) => {
+      if (simliEnabled && base64) avatarRef.current?.sendAudio(decodeBase64(base64));
+    },
     onError: (m) => setError(typeof m === "string" ? m : "Voice error"),
   });
+
+  // When the avatar drives audio, mute ElevenLabs' own playback so Simli is the
+  // single, lip-synced A/V source.
+  useEffect(() => {
+    if (started && simliEnabled) convo.setVolume({ volume: 0 });
+  }, [started, simliEnabled, convo]);
 
   function start() {
     setError(null);
     try {
-      convo.startSession({ agentId, connectionType: "webrtc", overrides });
+      convo.startSession({ agentId, connectionType: simliEnabled ? "websocket" : "webrtc", overrides });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not start the session");
     }
@@ -88,8 +110,21 @@ function Room({
       </Card>
 
       <div className="space-y-4">
+        {simliEnabled && (
+          <Card className="overflow-hidden p-2">
+            {started ? (
+              <SimliAvatar ref={avatarRef} onError={(m) => setError(m)} />
+            ) : (
+              <div className="grid aspect-video w-full place-items-center rounded-xl bg-slate-100 text-center text-xs text-slate-400">
+                Interviewer avatar appears when you start
+              </div>
+            )}
+            <p className="px-1 pt-1.5 text-[11px] text-slate-400">AI interviewer</p>
+          </Card>
+        )}
         <Card className="overflow-hidden p-2">
           <Webcam recording={started} />
+          <p className="px-1 pt-1.5 text-[11px] text-slate-400">You</p>
         </Card>
         <CompetencyRail plan={plan} />
       </div>
@@ -101,6 +136,7 @@ export default function VoiceInterview(props: {
   agentId: string;
   overrides: PrepareResponse["overrides"];
   plan: InterviewPlan;
+  simliEnabled: boolean;
   onComplete: (t: Transcript, conversationId?: string) => void;
 }) {
   return (

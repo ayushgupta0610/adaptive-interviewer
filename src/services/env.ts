@@ -14,6 +14,9 @@ const EnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1).optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
+  // Simli avatar (optional, experimental). Both required to enable the face.
+  SIMLI_API_KEY: z.string().min(1).optional(),
+  SIMLI_FACE_ID: z.string().min(1).optional(),
 });
 
 export const env = EnvSchema.parse({
@@ -25,6 +28,8 @@ export const env = EnvSchema.parse({
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  SIMLI_API_KEY: process.env.SIMLI_API_KEY,
+  SIMLI_FACE_ID: process.env.SIMLI_FACE_ID,
 });
 
 export const fakeLlmEnabled = env.FAKE_LLM === "1";
@@ -34,3 +39,4 @@ export const hasLlm = hasOpenRouter || fakeLlmEnabled;
 export const hasElevenLabs = !!env.ELEVENLABS_API_KEY && !!env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID;
 export const hasSupabaseClient = !!env.NEXT_PUBLIC_SUPABASE_URL && !!env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 export const hasSupabaseService = !!env.NEXT_PUBLIC_SUPABASE_URL && !!env.SUPABASE_SERVICE_ROLE_KEY;
+export const hasSimli = !!env.SIMLI_API_KEY && !!env.SIMLI_FACE_ID;

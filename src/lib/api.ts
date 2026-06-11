@@ -17,8 +17,14 @@ export interface StatusResponse {
   fakeLlm: boolean;
   elevenlabs: boolean;
   supabase: boolean;
+  simli: boolean;
   agentId: string | null;
   model: string;
+}
+
+export interface SimliSession {
+  sessionToken: string;
+  iceServers: RTCIceServer[] | null;
 }
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -43,5 +49,7 @@ export const apiScore = (plan: InterviewPlan, transcript: Transcript) =>
 
 export const apiAnalysis = (conversationId: string) =>
   postJson<{ analysis: ConversationAnalysis }>("/api/interview/analysis", { conversationId });
+
+export const apiSimliSession = () => postJson<SimliSession>("/api/simli/session", {});
 
 export const apiStatus = () => fetch("/api/status").then((r) => r.json() as Promise<StatusResponse>);

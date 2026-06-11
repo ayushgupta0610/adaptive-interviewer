@@ -43,6 +43,7 @@ function Stepper({ current }: { current: Step }) {
 export default function Home() {
   const [step, setStep] = useState<Step>("config");
   const [voiceAvailable, setVoiceAvailable] = useState(false);
+  const [simliEnabled, setSimliEnabled] = useState(false);
   const [agentId, setAgentId] = useState<string | null>(null);
   const [prep, setPrep] = useState<PrepareResponse | null>(null);
   const [plan, setPlan] = useState<InterviewPlan | null>(null);
@@ -55,6 +56,7 @@ export default function Home() {
     apiStatus()
       .then((s) => {
         setVoiceAvailable(s.elevenlabs);
+        setSimliEnabled(s.simli);
         setAgentId(s.agentId);
       })
       .catch(() => undefined);
@@ -144,7 +146,7 @@ export default function Home() {
             </div>
           </div>
           {mode === "voice" && agentId ? (
-            <VoiceInterview agentId={agentId} overrides={prep.overrides} plan={plan} onComplete={onComplete} />
+            <VoiceInterview agentId={agentId} overrides={prep.overrides} plan={plan} simliEnabled={simliEnabled} onComplete={onComplete} />
           ) : (
             <TextInterview systemPrompt={prep.systemPrompt} firstMessage={prep.firstMessage} plan={plan} onComplete={onComplete} />
           )}
