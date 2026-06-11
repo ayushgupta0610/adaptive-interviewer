@@ -48,6 +48,31 @@ Gaps / recommended:
 - ElevenLabs **content-category guardrails** (sexual / harassment / self-harm) are left off to avoid
   false positives in legitimate interviews — enable/tune per your tolerance.
 
+## Payments + auth — required before production
+
+The `feat/payments-auth` branch passed a security review; these CRITICAL/HIGH/MED items were **fixed**
+on it: forged-webhook-when-secret-unset, free-trial double-spend race (atomic `claimFreeTrial`),
+env-misconfig auth bypass, webhook rate-limit, error-message leak, webhook replay/staleness, checkout
+email check, `server-only` guard on env.
+
+**Still required before going live (deferred, tracked here):**
+- **Quota-race (concurrency):** the paid monthly quota check (count → allow) isn't yet atomic — under
+  concurrent requests a user could squeeze a couple of extra sessions. Wrap the count+insert in a
+  Postgres transaction with `SELECT ... FOR UPDATE` (or an advisory lock) before high volume.
+- **Webhook idempotency store:** persist the webhook `eventId` (unique index) and skip duplicates, so
+  a re-sent old `subscription_active` can't re-activate a cancelled sub.
+- **Rate-limit IP trust:** `clientIp` trusts `x-forwarded-for` (spoofable). On Vercel use the
+  platform-set header / require Upstash; treat the in-memory limiter as best-effort only.
+- **Require Upstash in production** (in-memory resets on cold starts) — make `hasUpstash` a prod assertion.
+- **`past_due` UX:** entitlement blocks `past_due` with the generic paywall; surface a distinct
+  "update your card" prompt.
+- **postcss** moderate advisory in the Next dependency tree — upgrade when a non-breaking patch lands.
+
+**Manual setup to activate (plan Task 15):** apply migrations `0002`/`0003`, enable Google in Supabase
+Auth, create the two Cashfree subscription plans + store `provider_plan_id`, point the Cashfree webhook
+at `/api/billing/webhook`, set `CASHFREE_*` + `UPSTASH_*` env (incl. `CASHFREE_WEBHOOK_SECRET`), then
+run the sandbox E2E.
+
 ## Recommended next (pairs with auth / payments)
 
 1. **Durable rate limiting + per-user quotas.** The in-memory limiter is **per server instance**, so
