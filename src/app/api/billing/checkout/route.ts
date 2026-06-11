@@ -11,7 +11,7 @@ export const maxDuration = 30;
 const Body = z.object({ planId: z.enum(["starter", "pro"]) });
 
 export async function POST(request: Request) {
-  const limited = enforceRateLimit(request, "checkout", 10);
+  const limited = await enforceRateLimit(request, "checkout", 10);
   if (limited) return limited;
   try {
     if (!hasCashfree) throw new ServiceUnavailableError("Payments not configured.");
