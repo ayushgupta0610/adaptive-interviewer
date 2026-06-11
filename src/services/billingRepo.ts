@@ -34,12 +34,16 @@ export function createBillingRepo(client: SupabaseClient = createServiceClient()
     /** Count consumed sessions of a billing kind since a timestamp. */
     async countSessionsSince(userId: string, billedAs: string, sinceIso: string): Promise<number> {
       const { count } = await client
-        .from("sessions")
+        .from("usage_events")
         .select("id", { count: "exact", head: true })
-        .eq("candidate_id", userId)
+        .eq("user_id", userId)
         .eq("billed_as", billedAs)
         .gte("created_at", sinceIso);
       return count ?? 0;
+    },
+    /** Record a session consumption into the usage ledger. */
+    async recordUsage(userId: string, mode: string, billedAs: string): Promise<void> {
+      await client.from("usage_events").insert({ user_id: userId, mode, billed_as: billedAs });
     },
     async upsertSubscriptionByProviderId(input: {
       providerSubscriptionId: string;

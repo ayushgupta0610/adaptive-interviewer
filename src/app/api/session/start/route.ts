@@ -37,6 +37,7 @@ export async function POST(request: Request) {
       return Response.json({ allowed: false, reason: result.reason }, { status: 402 });
 
     if (result.consume === "free_trial") await repo.markTrialUsed(userId);
+    if (result.consume !== "none") await repo.recordUsage(userId, mode, result.consume);
     return Response.json({ allowed: true, billedAs: result.consume });
   } catch (err) {
     return errorResponse(err);
