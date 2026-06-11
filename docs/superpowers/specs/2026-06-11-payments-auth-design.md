@@ -22,10 +22,21 @@ A flat monthly subscription with *unlimited* voice sessions is an open-ended los
 grants a capped number of sessions/month** — the cap is the cost control. Max monthly cost per
 subscriber ≈ `quota × per-session cost`; price the plan above that.
 
-Example plan (illustrative — finalize with live rates):
-- "Pro" ₹X/mo → **10 voice/avatar sessions/mo**. Cost ≈ 10 × $1.59 ≈ **$16** → price to keep margin
-  (e.g. ₹1,999 ≈ $24, ~33% margin) and/or use the **Trinity-1** avatar (~$0.01/min) to cut cost.
-- Text-only sessions are ~$0.05 — can be unmetered or a high cap.
+**Finalized pricing (target ≥25% gross margin even at 100% quota usage, worst case = every session
+hits the 10-min cap, after ~3% Cashfree fee; FX ~₹85/USD — verify live):**
+
+| Tier | Price | Quota (voice+avatar/mo) | Cost at full use | Margin (full, std avatar) |
+|---|---|---|---|---|
+| **Starter** | ₹999/mo | 4 | ~$6.36 | **~43%** |
+| **Pro** | ₹1,999/mo | 10 | ~$15.90 | **~29%** |
+
+- Switching paid sessions to the **Trinity-1 avatar** (~$0.01/min) lifts Pro's full-usage margin to
+  **~46%** — recommended default for paid sessions.
+- Realized margin is higher than the table (most users won't max the quota).
+- The **10-min session cap + monthly quota** are the hard cost controls. Verify FX + exact Cashfree
+  fee at launch and nudge prices if margin dips below 25%. (`src/lib/cost.ts` + `priceForMargin` can
+  recompute.)
+- **Text mode is free** (see below).
 
 ## Architecture
 
@@ -132,9 +143,13 @@ interface PaymentProvider {
 - Proration / mid-cycle plan changes (changes apply next cycle).
 - Manual invoicing/GST handling beyond what Cashfree provides.
 
-## Open questions to confirm before the plan
+## Resolved decisions
 
-1. Plan tiers + prices (₹) and the **monthly session quota** per tier (drives margin).
-2. Is text mode **free/unmetered** or also quota'd?
-3. Should the **free trial** be a voice+avatar session (best wow, ~$1.59 cost) or text-only (~free)?
-4. Cashfree account ready (merchant id + sandbox creds) for implementation/testing?
+1. **Tiers/pricing:** Starter ₹999 (4) and Pro ₹1,999 (10) — see pricing table (≥25% margin guaranteed).
+2. **Text mode is FREE**, but guarded against AI/cost abuse: **auth required** (no anonymous),
+   **per-user daily cap** (e.g. 5 free text sessions/user/day), per-user rate limits, and the
+   `/turn` open-proxy is already closed (server-derived prompt). Text cost is ~$0.05/session, so the
+   daily cap bounds worst-case free spend to a few cents/user/day.
+3. **Free trial = one full voice+avatar session** (best wow). Low expected volume → acceptable
+   (~$1.59 each); **monitor** trial usage + spend and tighten if abused.
+4. **Cashfree account is ready** (merchant + sandbox creds available for build/test).
