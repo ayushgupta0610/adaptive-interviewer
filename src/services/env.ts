@@ -1,3 +1,4 @@
+import "server-only";
 import { z } from "zod";
 
 /**
@@ -17,6 +18,16 @@ const EnvSchema = z.object({
   // Simli avatar (optional, experimental). Both required to enable the face.
   SIMLI_API_KEY: z.string().min(1).optional(),
   SIMLI_FACE_ID: z.string().min(1).optional(),
+  // Cashfree (payments)
+  CASHFREE_APP_ID: z.string().min(1).optional(),
+  CASHFREE_SECRET_KEY: z.string().min(1).optional(),
+  CASHFREE_WEBHOOK_SECRET: z.string().min(1).optional(),
+  CASHFREE_ENV: z.enum(["sandbox", "production"]).default("sandbox"),
+  // Upstash Redis (durable rate limiting)
+  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
+  // Free text tier daily cap
+  FREE_TEXT_DAILY_CAP: z.coerce.number().int().min(0).default(5),
 });
 
 export const env = EnvSchema.parse({
@@ -30,6 +41,13 @@ export const env = EnvSchema.parse({
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
   SIMLI_API_KEY: process.env.SIMLI_API_KEY,
   SIMLI_FACE_ID: process.env.SIMLI_FACE_ID,
+  CASHFREE_APP_ID: process.env.CASHFREE_APP_ID,
+  CASHFREE_SECRET_KEY: process.env.CASHFREE_SECRET_KEY,
+  CASHFREE_WEBHOOK_SECRET: process.env.CASHFREE_WEBHOOK_SECRET,
+  CASHFREE_ENV: process.env.CASHFREE_ENV,
+  UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+  UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
+  FREE_TEXT_DAILY_CAP: process.env.FREE_TEXT_DAILY_CAP,
 });
 
 export const fakeLlmEnabled = env.FAKE_LLM === "1";
@@ -40,3 +58,6 @@ export const hasElevenLabs = !!env.ELEVENLABS_API_KEY && !!env.NEXT_PUBLIC_ELEVE
 export const hasSupabaseClient = !!env.NEXT_PUBLIC_SUPABASE_URL && !!env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 export const hasSupabaseService = !!env.NEXT_PUBLIC_SUPABASE_URL && !!env.SUPABASE_SERVICE_ROLE_KEY;
 export const hasSimli = !!env.SIMLI_API_KEY && !!env.SIMLI_FACE_ID;
+export const hasCashfree = !!env.CASHFREE_APP_ID && !!env.CASHFREE_SECRET_KEY;
+export const hasCashfreeWebhook = hasCashfree && !!env.CASHFREE_WEBHOOK_SECRET;
+export const hasUpstash = !!env.UPSTASH_REDIS_REST_URL && !!env.UPSTASH_REDIS_REST_TOKEN;

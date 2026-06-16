@@ -6,6 +6,7 @@ import { prepareInterview } from "@/usecases/prepare";
 import { getLlm, getPlanCache, interviewModel } from "@/services/runtime";
 import { errorResponse } from "@/services/http";
 import { enforceRateLimit } from "@/services/rateLimit";
+import { getUserId, unauthorized } from "@/services/auth";
 
 // Plan generation is an LLM call; allow headroom over Vercel's default timeout.
 export const maxDuration = 60;
@@ -16,8 +17,10 @@ const BodySchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const limited = enforceRateLimit(request, "prepare", 15);
+  const limited = await enforceRateLimit(request, "prepare", 15);
   if (limited) return limited;
+  const userId = await getUserId(request);
+  if (!userId) return unauthorized();
   try {
     const body = BodySchema.parse(await request.json());
     const result = await prepareInterview(

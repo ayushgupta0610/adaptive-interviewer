@@ -5,6 +5,8 @@
  * NOTE: in-memory = per server instance, so it does NOT hold across serverless
  * instances. For production, back this with a shared store (e.g. Upstash Redis).
  */
+import { durableCheck } from "./redisRateLimit";
+
 type Bucket = { count: number; resetAt: number };
 const buckets = new Map<string, Bucket>();
 
@@ -33,16 +35,18 @@ export function clientIp(request: Request): string {
 }
 
 /** Returns a 429 Response if the caller is over the limit, else null. */
-export function enforceRateLimit(
+export async function enforceRateLimit(
   request: Request,
   name: string,
   limit: number,
   windowMs = 60_000,
-): Response | null {
-  const { ok, retryAfter } = checkRateLimit(`${name}:${clientIp(request)}`, limit, windowMs);
+): Promise<Response | null> {
+  const id = clientIp(request);
+  const durable = await durableCheck(name, id, limit, Math.round(windowMs / 1000));
+  const ok = durable === null ? checkRateLimit(`${name}:${id}`, limit, windowMs).ok : durable;
   if (ok) return null;
   return Response.json(
     { error: "Too many requests — please slow down." },
-    { status: 429, headers: { "Retry-After": String(retryAfter) } },
+    { status: 429 },
   );
 }
