@@ -21,7 +21,7 @@ create table if not exists subscriptions (
   plan_id text not null references plans(id),
   provider text not null default 'cashfree',
   provider_subscription_id text unique,
-  status text not null default 'active',  -- active|past_due|cancelled|expired
+  status text not null default 'pending',  -- pending|active|past_due|cancelled|expired (fail closed: not entitled until the webhook confirms payment)
   current_period_start timestamptz,
   current_period_end timestamptz,
   created_at timestamptz not null default now()

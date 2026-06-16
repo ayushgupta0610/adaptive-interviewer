@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { getUserId, unauthorized } from "@/services/auth";
 import { createServiceClient } from "@/services/supabase";
+import { createBillingRepo } from "@/services/billingRepo";
 import { createCashfreeProvider } from "@/services/payments/cashfree";
 import { env, hasCashfree } from "@/services/env";
 import { ServiceUnavailableError } from "@/services/runtime";
@@ -26,6 +27,11 @@ export async function POST(request: Request) {
     const email = user.user?.email;
     if (!email) return Response.json({ error: "Account email required for checkout." }, { status: 400 });
 
+    // Persist the local subscription row first (status "pending"), keyed by the id we
+    // hand Cashfree, so the later subscription_active webhook has a row to flip to active.
+    const subscriptionId = `sub_${userId}_${Date.now()}`;
+    await createBillingRepo().createPendingSubscription({ userId, planId, providerSubscriptionId: subscriptionId });
+
     const provider = createCashfreeProvider({
       appId: env.CASHFREE_APP_ID!,
       secretKey: env.CASHFREE_SECRET_KEY!,
@@ -37,6 +43,7 @@ export async function POST(request: Request) {
       email,
       planId,
       providerPlanId: plan.provider_plan_id,
+      subscriptionId,
     });
     return Response.json({ url });
   } catch (err) {
