@@ -61,9 +61,9 @@ describe("canStartSession — edge cases", () => {
     const r = canStartSession({ ...base, mode: "text", freeTrialUsed: true, subscription: null, freeTextToday: 0 });
     expect(r).toEqual({ allowed: true, reason: "ok", consume: "free_text" });
   });
-  it("gives active subscribers unlimited text (bypasses the daily cap)", () => {
+  it("gives active subscribers unlimited text under a distinct ledger label (bypasses the daily cap)", () => {
     const r = canStartSession({ ...base, mode: "text", freeTextToday: 99, freeTextDailyCap: 5, subscription: { status: "active", quota: 10 } });
-    expect(r).toEqual({ allowed: true, reason: "ok", consume: "free_text" });
+    expect(r).toEqual({ allowed: true, reason: "ok", consume: "subscription_text" });
   });
   it("still caps free (no-subscription) users on text", () => {
     const r = canStartSession({ ...base, mode: "text", freeTextToday: 5, freeTextDailyCap: 5, subscription: null });

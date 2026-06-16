@@ -11,7 +11,7 @@ export interface EntitlementInput {
   freeTextDailyCap: number;
 }
 
-export type Consume = "free_text" | "free_trial" | "subscription" | "none";
+export type Consume = "free_text" | "free_trial" | "subscription" | "subscription_text" | "none";
 export interface EntitlementResult {
   allowed: boolean;
   reason: string;
@@ -20,9 +20,10 @@ export interface EntitlementResult {
 
 export function canStartSession(i: EntitlementInput): EntitlementResult {
   if (i.mode === "text") {
-    // Active subscribers get unlimited text; free users are capped per day.
+    // Active subscribers get unlimited text; logged under a distinct ledger label so
+    // their usage doesn't pollute the free-tier `free_text` bucket. Free users are capped per day.
     if (i.subscription && i.subscription.status === "active") {
-      return { allowed: true, reason: "ok", consume: "free_text" };
+      return { allowed: true, reason: "ok", consume: "subscription_text" };
     }
     return i.freeTextToday < i.freeTextDailyCap
       ? { allowed: true, reason: "ok", consume: "free_text" }
