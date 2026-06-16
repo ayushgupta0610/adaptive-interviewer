@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { TIERS } from "./pricing";
+import { TIERS } from "./pricingTiers";
 
 describe("pricing TIERS", () => {
   it("has Free, Plus (starter), Pro (pro)", () => {

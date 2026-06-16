@@ -3,7 +3,7 @@ import { Check } from "lucide-react";
 import { Button, cn } from "@/components/ui";
 import Reveal from "@/components/motion/Reveal";
 import { apiCheckout } from "@/lib/api";
-import { TIERS } from "./pricing";
+import { TIERS } from "./pricingTiers";
 
 export default function Pricing({ onFree }: { onFree: () => void }) {
   async function choose(checkoutId?: "starter" | "pro") {

@@ -4,7 +4,7 @@ import Hero from "./Hero";
 import HowItWorks from "./HowItWorks";
 import ScorecardCarousel from "./ScorecardCarousel";
 import Features from "./Features";
-import Pricing from "./Pricing.tsx";
+import Pricing from "./Pricing";
 import FinalCta from "./FinalCta";
 
 function startGoogle() {
