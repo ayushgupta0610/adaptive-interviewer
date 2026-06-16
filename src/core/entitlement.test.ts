@@ -31,3 +31,34 @@ describe("canStartSession", () => {
     expect(r.allowed).toBe(false);
   });
 });
+
+describe("canStartSession — edge cases", () => {
+  it("blocks free text exactly at the cap boundary", () => {
+    const r = canStartSession({ ...base, mode: "text", freeTextToday: 5, freeTextDailyCap: 5 });
+    expect(r).toEqual({ allowed: false, reason: "text_daily_cap", consume: "none" });
+  });
+  it("blocks all free text when the daily cap is zero", () => {
+    const r = canStartSession({ ...base, mode: "text", freeTextToday: 0, freeTextDailyCap: 0 });
+    expect(r.allowed).toBe(false);
+  });
+  it("treats a cancelled subscription as no subscription", () => {
+    const r = canStartSession({ ...base, mode: "voice", freeTrialUsed: true, subscription: { status: "cancelled", quota: 10 } });
+    expect(r).toEqual({ allowed: false, reason: "no_subscription", consume: "none" });
+  });
+  it("treats an expired subscription as no subscription", () => {
+    const r = canStartSession({ ...base, mode: "voice", freeTrialUsed: true, subscription: { status: "expired", quota: 10 } });
+    expect(r.reason).toBe("no_subscription");
+  });
+  it("falls back to the free trial when the subscription is non-active and the trial is unused", () => {
+    const r = canStartSession({ ...base, mode: "voice", freeTrialUsed: false, subscription: { status: "past_due", quota: 10 } });
+    expect(r).toEqual({ allowed: true, reason: "ok", consume: "free_trial" });
+  });
+  it("blocks voice on an active subscription whose quota is zero", () => {
+    const r = canStartSession({ ...base, mode: "voice", freeTrialUsed: true, subscription: { status: "active", quota: 0 } });
+    expect(r.reason).toBe("quota_exceeded");
+  });
+  it("allows free text even when voice entitlement is fully exhausted", () => {
+    const r = canStartSession({ ...base, mode: "text", freeTrialUsed: true, subscription: null, freeTextToday: 0 });
+    expect(r).toEqual({ allowed: true, reason: "ok", consume: "free_text" });
+  });
+});
