@@ -9,7 +9,7 @@ export default function Pricing({ onFree }: { onFree: () => void }) {
   async function choose(checkoutId?: "starter" | "pro") {
     if (!checkoutId) return onFree();
     const { url } = await apiCheckout(checkoutId);
-    window.location.href = url;
+    window.location.assign(url);
   }
   return (
     <section id="pricing" className="mx-auto w-full max-w-5xl px-6 py-14">
