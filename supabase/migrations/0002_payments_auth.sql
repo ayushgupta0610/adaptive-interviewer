@@ -46,9 +46,12 @@ create policy subscriptions_self on subscriptions for select to authenticated us
 -- Writes to profiles/subscriptions happen via the service role (gating + webhooks), which bypasses RLS.
 
 insert into plans (id, name, price_inr, monthly_session_quota) values
-  ('starter','Starter',999,4),
-  ('pro','Pro',1999,10)
-on conflict (id) do nothing;
+  ('starter','Plus',299,3),
+  ('pro','Pro',699,10)
+on conflict (id) do update set
+  name = excluded.name,
+  price_inr = excluded.price_inr,
+  monthly_session_quota = excluded.monthly_session_quota;
 
 -- Create a profile row automatically on signup.
 create or replace function handle_new_user() returns trigger language plpgsql security definer as $$
