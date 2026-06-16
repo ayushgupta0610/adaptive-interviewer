@@ -2,8 +2,12 @@ import type { RoleSample } from "./samples";
 
 const BAR_COLORS = ["bg-indigo-600", "bg-indigo-500", "bg-indigo-400"];
 
+interface ScorecardCardProps {
+  sample: RoleSample;
+}
+
 /** One sample scorecard: role · competency bars · strength + gap notes. */
-export default function ScorecardCard({ sample }: { sample: RoleSample }) {
+export default function ScorecardCard({ sample }: ScorecardCardProps) {
   return (
     <div className="flex flex-wrap gap-5 rounded-2xl border border-hairline bg-surface-muted p-5">
       <div className="min-w-[190px] flex-1">
