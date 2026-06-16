@@ -20,6 +20,10 @@ export interface EntitlementResult {
 
 export function canStartSession(i: EntitlementInput): EntitlementResult {
   if (i.mode === "text") {
+    // Active subscribers get unlimited text; free users are capped per day.
+    if (i.subscription && i.subscription.status === "active") {
+      return { allowed: true, reason: "ok", consume: "free_text" };
+    }
     return i.freeTextToday < i.freeTextDailyCap
       ? { allowed: true, reason: "ok", consume: "free_text" }
       : { allowed: false, reason: "text_daily_cap", consume: "none" };
