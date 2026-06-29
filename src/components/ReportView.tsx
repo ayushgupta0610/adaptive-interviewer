@@ -5,7 +5,7 @@ import { Button, Card, Badge, cn } from "@/components/ui";
 import RecruiterPanel from "@/components/RecruiterPanel";
 import { motion, useReducedMotion } from "framer-motion";
 import Reveal from "@/components/motion/Reveal";
-import CountUp from "@/components/motion/CountUp.tsx";
+import CountUp from "@/components/motion/CountUp";
 import { Check, TriangleAlert, ThumbsUp, ThumbsDown, Minus } from "lucide-react";
 
 function label(plan: InterviewPlan, competencyId: string): string {
