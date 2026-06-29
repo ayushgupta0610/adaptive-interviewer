@@ -4,8 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import type { ChatMessage } from "@/core/chat";
 import type { InterviewPlan, Transcript } from "@/domain/schemas";
 import { apiTurn } from "@/lib/api";
-import { Button, Card, Spinner } from "@/components/ui";
+import { Button, Card } from "@/components/ui";
 import CompetencyRail from "@/components/CompetencyRail";
+import { Send, Sparkles } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 
 export default function TextInterview({
   interviewId,
@@ -18,6 +20,7 @@ export default function TextInterview({
   plan: InterviewPlan;
   onComplete: (t: Transcript) => void;
 }) {
+  const reduce = useReducedMotion();
   const [messages, setMessages] = useState<ChatMessage[]>([{ role: "assistant", content: firstMessage }]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -63,7 +66,7 @@ export default function TextInterview({
           {messages.map((m, i) =>
             m.role === "assistant" ? (
               <div key={i} className="flex items-start gap-2.5">
-                <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-xs font-bold text-white">AI</span>
+                <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white"><Sparkles size={13} /></span>
                 <div className="max-w-[80%] rounded-2xl rounded-tl-sm bg-slate-100 px-4 py-2.5 text-sm leading-relaxed text-slate-800">
                   {m.content}
                 </div>
@@ -77,8 +80,18 @@ export default function TextInterview({
             ),
           )}
           {busy && (
-            <div className="flex items-center gap-2 text-sm text-slate-400">
-              <Spinner className="h-4 w-4" /> Interviewer is thinking…
+            <div className="flex items-start gap-2.5">
+              <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white"><Sparkles size={14} /></span>
+              <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-slate-100 px-4 py-3.5">
+                {[0, 1, 2].map((i) => (
+                  <motion.span
+                    key={i}
+                    className="h-1.5 w-1.5 rounded-full bg-slate-400"
+                    animate={reduce ? undefined : { opacity: [0.3, 1, 0.3] }}
+                    transition={reduce ? undefined : { duration: 1, repeat: Infinity, delay: i * 0.15 }}
+                  />
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -92,7 +105,7 @@ export default function TextInterview({
             placeholder="Type your answer…"
             className="flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
           />
-          <Button type="submit" disabled={busy}>Send</Button>
+          <Button type="submit" disabled={busy} aria-label="Send"><Send size={15} /></Button>
         </form>
       </Card>
 
