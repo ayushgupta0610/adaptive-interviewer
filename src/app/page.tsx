@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Check } from "lucide-react";
 import type { FeedbackReport, Guidelines, InterviewPlan, Transcript } from "@/domain/schemas";
 import { apiScore, apiSessionStart, apiStatus, type PrepareResponse } from "@/lib/api";
 import ConfigForm, { type Mode } from "@/components/ConfigForm";
@@ -10,6 +11,7 @@ import ReportView from "@/components/ReportView";
 import AuthGate from "@/components/AuthGate";
 import Paywall from "@/components/Paywall";
 import { Card, Spinner } from "@/components/ui";
+import Reveal from "@/components/motion/Reveal";
 
 type Step = "config" | "interview" | "scoring" | "report";
 
@@ -31,7 +33,7 @@ function Stepper({ current }: { current: Step }) {
                 i <= idx ? "bg-indigo-600 text-white" : "bg-slate-200 text-slate-500"
               }`}
             >
-              {i + 1}
+              {i < idx ? <Check size={14} strokeWidth={3} /> : i + 1}
             </span>
             <span className={`text-sm font-medium ${i <= idx ? "text-slate-900" : "text-slate-400"}`}>{s.label}</span>
           </div>
@@ -179,11 +181,13 @@ export default function Home() {
         )}
 
         {step === "scoring" && (
-          <Card className="animate-fade-in flex flex-col items-center gap-3 p-12 text-center">
-            <Spinner className="h-6 w-6 text-indigo-600" />
-            <p className="font-medium text-slate-700">Scoring your interview…</p>
-            <p className="text-sm text-slate-400">Grading each competency against the rubric.</p>
-          </Card>
+          <Reveal>
+            <Card className="animate-fade-in flex flex-col items-center gap-3 p-12 text-center">
+              <Spinner className="h-6 w-6 text-indigo-600" />
+              <p className="font-medium text-slate-700">Scoring your interview…</p>
+              <p className="animate-pulse text-sm text-slate-400">Grading each competency against the rubric.</p>
+            </Card>
+          </Reveal>
         )}
 
         {step === "report" && report && plan && (

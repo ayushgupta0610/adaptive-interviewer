@@ -8,6 +8,7 @@ import Webcam from "./Webcam";
 import CompetencyRail from "./CompetencyRail";
 import SimliAvatar, { type SimliHandle } from "./SimliAvatar";
 import { Button, Card } from "@/components/ui";
+import { Mic, PhoneOff, Radio } from "lucide-react";
 
 /** Decode an ElevenLabs base64 audio chunk into raw PCM bytes for Simli. */
 function decodeBase64(b64: string): Uint8Array {
@@ -77,7 +78,7 @@ function Room({
         <div className="flex-1 space-y-4 overflow-y-auto p-5">
           {turns.length === 0 && (
             <div className="flex h-full flex-col items-center justify-center text-center text-slate-400">
-              <span className="grid h-12 w-12 place-items-center rounded-2xl bg-indigo-50 text-2xl">🎙</span>
+              <span className="grid h-12 w-12 place-items-center rounded-2xl bg-indigo-50"><Mic size={22} className="text-indigo-600" /></span>
               <p className="mt-3 text-sm">Press start, allow your mic, and answer out loud.</p>
               <p className="text-xs">The live transcript appears here.</p>
             </div>
@@ -98,12 +99,13 @@ function Room({
         <div className="flex items-center justify-between border-t border-slate-200 p-3">
           <span className="flex items-center gap-2 text-sm text-slate-500">
             <span className={`h-2 w-2 rounded-full ${started ? "animate-pulse bg-emerald-500" : "bg-slate-300"}`} />
+            {started && <Radio size={13} />}
             {started ? (convo.isSpeaking ? "Interviewer speaking" : "Listening…") : "Not started"}
           </span>
           {!started ? (
-            <Button onClick={start}>Start interview</Button>
+            <Button onClick={start}><Mic size={15} /> Start interview</Button>
           ) : (
-            <Button variant="danger" onClick={() => convo.endSession()}>End &amp; get feedback</Button>
+            <Button variant="danger" onClick={() => convo.endSession()}><PhoneOff size={15} /> End & get feedback</Button>
           )}
         </div>
         {error && <p className="px-4 pb-3 text-sm text-rose-600">{error}</p>}
