@@ -30,7 +30,12 @@ const EnvSchema = z.object({
   FREE_TEXT_DAILY_CAP: z.coerce.number().int().min(0).default(5),
 });
 
-export const env = EnvSchema.parse({
+/**
+ * Raw env inputs. Empty strings (e.g. a `FOO=` placeholder left in .env.local) are coerced to
+ * `undefined` below so optional fields don't fail validation — without this, an empty
+ * `UPSTASH_REDIS_REST_URL=` crashes the build via `.url()`/`.min(1)`.
+ */
+const rawEnv: Record<string, string | undefined> = {
   OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
   OPENROUTER_MODEL: process.env.OPENROUTER_MODEL,
   FAKE_LLM: process.env.FAKE_LLM,
@@ -48,7 +53,11 @@ export const env = EnvSchema.parse({
   UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
   UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
   FREE_TEXT_DAILY_CAP: process.env.FREE_TEXT_DAILY_CAP,
-});
+};
+
+export const env = EnvSchema.parse(
+  Object.fromEntries(Object.entries(rawEnv).map(([k, v]) => [k, v === "" ? undefined : v])),
+);
 
 export const fakeLlmEnabled = env.FAKE_LLM === "1";
 export const hasOpenRouter = !!env.OPENROUTER_API_KEY;
