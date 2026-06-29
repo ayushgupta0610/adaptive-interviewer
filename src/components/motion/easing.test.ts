@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { easeOutValue } from "./countup";
+import { easeOutValue } from "./easing";
 
 describe("easeOutValue", () => {
   it("is 0 at t=0 and the target at t=1", () => {

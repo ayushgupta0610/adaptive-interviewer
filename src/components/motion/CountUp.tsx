@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
-import { easeOutValue } from "./countup";
+import { easeOutValue } from "./easing";
 
 interface CountUpProps {
   value: number;
