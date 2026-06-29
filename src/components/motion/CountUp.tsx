@@ -13,14 +13,12 @@ interface CountUpProps {
 /** Animates 0 → value on mount with an ease-out. Renders the final value instantly under reduced motion. */
 export default function CountUp({ value, decimals = 1, durationMs = 900 }: CountUpProps) {
   const reduce = useReducedMotion();
-  const [display, setDisplay] = useState(reduce ? value : 0);
+  const [display, setDisplay] = useState(0);
   const raf = useRef<number | null>(null);
 
   useEffect(() => {
-    if (reduce) {
-      setDisplay(value);
-      return;
-    }
+    // Under reduced motion we render `value` directly (below) — no animation, no setState here.
+    if (reduce) return;
     let start: number | null = null;
     const tick = (ts: number) => {
       if (start === null) start = ts;
@@ -35,5 +33,5 @@ export default function CountUp({ value, decimals = 1, durationMs = 900 }: Count
     };
   }, [value, durationMs, reduce]);
 
-  return <>{display.toFixed(decimals)}</>;
+  return <>{(reduce ? value : display).toFixed(decimals)}</>;
 }
