@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
+import { CreditCard } from "lucide-react";
 import { supabaseBrowser, isSupabaseConfigured } from "@/lib/supabaseBrowser";
+import { Card } from "@/components/ui";
 
 export default function Account() {
   const [info, setInfo] = useState<string>(
@@ -26,8 +28,15 @@ export default function Account() {
 
   return (
     <main className="mx-auto max-w-md p-10">
-      <h1 className="mb-3 text-xl font-semibold">Account</h1>
-      <p className="text-sm text-slate-600">{info}</p>
+      <Card className="p-6">
+        <div className="mb-3 flex items-center gap-2">
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-50 text-indigo-600">
+            <CreditCard size={16} />
+          </span>
+          <h1 className="text-lg font-semibold tracking-tight text-slate-900">Account</h1>
+        </div>
+        <p className="text-sm text-slate-600">{info}</p>
+      </Card>
     </main>
   );
 }
