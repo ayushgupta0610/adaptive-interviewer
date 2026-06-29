@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { supabaseBrowser, isSupabaseConfigured } from "@/lib/supabaseBrowser";
-import { Button, Card } from "@/components/ui";
+import { gateView } from "@/components/landing/auth-view";
+import Landing from "@/components/landing/Landing";
 
 /**
  * Returns the current Supabase access token, or null when not signed in.
@@ -29,35 +30,11 @@ export function useAccessToken(): string | null {
 }
 
 /**
- * Wraps children with a Google OAuth sign-in gate.
- *
- * When NEXT_PUBLIC_SUPABASE_URL is NOT set (keyless/demo mode), renders
- * children directly without requiring a sign-in — preserving the demo flow.
- * When Supabase IS configured, shows a "Continue with Google" prompt until
- * the user is authenticated.
+ * Signed-out visitors (Supabase configured, no token) see the marketing Landing.
+ * Signed-in users and keyless/demo mode get the app directly.
  */
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   const token = useAccessToken();
-
-  // Keyless mode: token is "demo" immediately; skip the sign-in wall.
-  if (!isSupabaseConfigured) return <>{children}</>;
-
-  if (token) return <>{children}</>;
-
-  return (
-    <Card className="mx-auto max-w-sm p-8 text-center">
-      <h2 className="mb-2 text-lg font-semibold">Sign in to start</h2>
-      <p className="mb-4 text-sm text-slate-500">Your first voice interview is free.</p>
-      <Button
-        onClick={() =>
-          supabaseBrowser().auth.signInWithOAuth({
-            provider: "google",
-            options: { redirectTo: window.location.origin },
-          })
-        }
-      >
-        Continue with Google
-      </Button>
-    </Card>
-  );
+  if (gateView(isSupabaseConfigured, token) === "app") return <>{children}</>;
+  return <Landing />;
 }

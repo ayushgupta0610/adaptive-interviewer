@@ -6,6 +6,8 @@ export interface PaymentProvider {
     email: string;
     planId: string;
     providerPlanId: string;
+    /** Caller-owned subscription id, persisted locally so the webhook can match it. */
+    subscriptionId: string;
   }): Promise<{ url: string }>;
   verifyAndParseWebhook(rawBody: string, signature: string, timestamp: string): BillingEvent;
 }

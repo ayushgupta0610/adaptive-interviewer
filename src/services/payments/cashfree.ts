@@ -35,7 +35,7 @@ function mapStatus(s: string): BillingEvent["type"] {
 export function createCashfreeProvider(cfg: Cfg): PaymentProvider {
   const doFetch = cfg.fetchImpl ?? fetch;
   return {
-    async createSubscriptionCheckout({ userId, email, providerPlanId }) {
+    async createSubscriptionCheckout({ userId, email, providerPlanId, subscriptionId }) {
       const res = await doFetch(`${BASE[cfg.env]}/subscriptions`, {
         method: "POST",
         headers: {
@@ -45,7 +45,7 @@ export function createCashfreeProvider(cfg: Cfg): PaymentProvider {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          subscription_id: `sub_${userId}_${Date.now()}`,
+          subscription_id: subscriptionId,
           plan_details: { plan_id: providerPlanId },
           customer_details: { customer_email: email, customer_id: userId },
           subscription_meta: { return_url: `${process.env.APP_URL ?? ""}/account` },

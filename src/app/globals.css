@@ -8,6 +8,15 @@
   --color-brand-500: #6366f1;
   --color-brand-600: #4f46e5;
   --color-brand-700: #4338ca;
+  /* semantic scorecard tones */
+  --color-good: #15803d;
+  --color-good-bg: #dcfce7;
+  --color-gap: #b91c1c;
+  --color-gap-bg: #fee2e2;
+  /* surfaces / borders used across landing */
+  --color-surface: #ffffff;
+  --color-surface-muted: #f8fafc;
+  --color-hairline: #e8eaf0;
   --animate-fade-in: fade-in 0.4s ease both;
   --animate-rise: rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -30,6 +39,11 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes pulse-bar {
+  from { transform: scaleY(0.6); opacity: 0.7; }
+  to { transform: scaleY(1); opacity: 1; }
 }
 
 html {

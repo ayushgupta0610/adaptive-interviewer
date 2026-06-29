@@ -25,9 +25,9 @@ export default function Paywall({ reason }: PaywallProps) {
       <p className="mb-6 text-sm text-slate-500">{caption}</p>
       <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
         <Button variant="secondary" onClick={() => void buy("starter")}>
-          Starter ₹999 / mo
+          Plus ₹299 / mo
         </Button>
-        <Button onClick={() => void buy("pro")}>Pro ₹1,999 / mo</Button>
+        <Button onClick={() => void buy("pro")}>Pro ₹699 / mo</Button>
       </div>
     </Card>
   );

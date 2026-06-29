@@ -53,6 +53,24 @@ export function createBillingRepo(client: SupabaseClient = createServiceClient()
     async recordUsage(userId: string, mode: string, billedAs: string): Promise<void> {
       await client.from("usage_events").insert({ user_id: userId, mode, billed_as: billedAs });
     },
+    /**
+     * Create the local subscription row at checkout time, BEFORE payment is confirmed,
+     * keyed by the provider subscription id. Status is "pending" (not entitled) until the
+     * webhook flips it to "active" — without this row the webhook's update matches nothing.
+     */
+    async createPendingSubscription(input: {
+      userId: string;
+      planId: string;
+      providerSubscriptionId: string;
+    }): Promise<void> {
+      const { error } = await client.from("subscriptions").insert({
+        user_id: input.userId,
+        plan_id: input.planId,
+        provider_subscription_id: input.providerSubscriptionId,
+        status: "pending",
+      });
+      if (error) throw new Error(`createPendingSubscription failed: ${error.message}`);
+    },
     async upsertSubscriptionByProviderId(input: {
       providerSubscriptionId: string;
       status: SubscriptionStatus;
