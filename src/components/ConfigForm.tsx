@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Mic, MessageSquare, ArrowRight, ChevronDown } from "lucide-react";
 import type { Guidelines } from "@/domain/schemas";
 import { apiPrepare, type PrepareResponse } from "@/lib/api";
 import { Button, Spinner, cn } from "@/components/ui";
@@ -28,9 +29,7 @@ function Select({
       <select value={value} onChange={(e) => onChange(e.target.value)} className={cn(inputClass, "appearance-none pr-9 capitalize")}>
         {children}
       </select>
-      <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
+      <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
     </div>
   );
 }
@@ -130,7 +129,7 @@ export default function ConfigForm({
                 !voiceAvailable && "cursor-not-allowed opacity-50",
               )}
             >
-              🎙 Voice
+              <Mic size={15} /> Voice
             </button>
             <button
               type="button"
@@ -140,7 +139,7 @@ export default function ConfigForm({
                 effectiveMode === "text" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700",
               )}
             >
-              💬 Text
+              <MessageSquare size={15} /> Text
             </button>
           </div>
         </div>
@@ -161,9 +160,7 @@ export default function ConfigForm({
         ) : (
           <>
             Start interview
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <ArrowRight size={16} />
           </>
         )}
       </Button>
